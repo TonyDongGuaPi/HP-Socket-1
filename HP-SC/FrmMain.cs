@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using HPSocketCS;
+using System.Collections;
 
 namespace HP_SCServer
 {
@@ -25,7 +26,7 @@ namespace HP_SCServer
         private UpdateGridView updateGridViewDelegate;
         HPSocketCS.TcpServer server = new HPSocketCS.TcpServer();
         HPSocketCS.Extra<ClientInfo> extra = new HPSocketCS.Extra<ClientInfo>();
-        Dictionary<string, ClientInfo> daCI = new Dictionary<string, ClientInfo>();
+        Hashtable htCI = new Hashtable();
 
         private string title = "TcpServer [ 'C' - 清空数据 ]";
 
@@ -174,7 +175,7 @@ namespace HP_SCServer
             clientInfo.IpAddress = ip;
             clientInfo.Port = port;
 
-            daCI.Add(connId.ToString(), clientInfo);//向字典中添加数据，保存每一个连接
+            htCI.Add(connId, clientInfo);
             if (extra.Set(connId, clientInfo) == false)
             {
                 AddMsg(string.Format(" > [连接客户端ID:{0}] -> 设置连接附加信息异常", connId));
@@ -188,9 +189,9 @@ namespace HP_SCServer
                 dt.Columns.Add("prot");
 
                 ClientInfo ci = new ClientInfo();
-                foreach (var item in daCI)
+                foreach (var item in htCI.Values)
                 {
-                    ci = (ClientInfo)item.Value;
+                    ci = (ClientInfo)item;
                     DataRow dr = dt.NewRow();
                     dr["connid"] = ci.ConnId.ToString();
                     dr["IP"] = ci.IpAddress.ToString();
@@ -292,7 +293,7 @@ namespace HP_SCServer
 
             // 获取附加数据
             ClientInfo clientInfo = extra.Get(connId);
-            daCI.Remove(clientInfo.ConnId.ToString());//从字典中移除该连接
+            htCI.Remove(clientInfo.ConnId);
             if (extra.Remove(connId) == false)
             {
                 AddMsg(string.Format(" > [关闭客户端ID：{0}] -> SetConnectionExtra({0}, null) fail", connId));
@@ -303,13 +304,12 @@ namespace HP_SCServer
                 DataTable dt = new DataTable();
                 dt.Columns.Add("connid");
                 dt.Columns.Add("IP");
-                dt.Columns.Add("prot");
-                
+                dt.Columns.Add("prot");                
 
                 ClientInfo ci = new ClientInfo();
-                foreach (var item in daCI)
+                foreach(var item in htCI.Values)
                 {
-                    ci = (ClientInfo)item.Value;
+                    ci = (ClientInfo)item;
                     DataRow dr = dt.NewRow();
                     dr["connid"] = ci.ConnId.ToString();
                     dr["IP"] = ci.IpAddress.ToString();
