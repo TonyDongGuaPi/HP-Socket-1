@@ -20,9 +20,12 @@ namespace HP_SC
     {
         private AppState appState = AppState.Stoped;
         private delegate void ShowMsg(string msg);
+        private delegate void UpdateGridView(DataTable dt);
         private ShowMsg AddMsgDelegate;
+        private UpdateGridView updateGridViewDelegate;
         HPSocketCS.TcpServer server = new HPSocketCS.TcpServer();
         HPSocketCS.Extra<ClientInfo> extra = new HPSocketCS.Extra<ClientInfo>();
+        Dictionary<string, ClientInfo> daCI = new Dictionary<string, ClientInfo>();
 
         private string title = "TcpServer [ 'C' - 清空数据 ]";
 
@@ -41,6 +44,7 @@ namespace HP_SC
 
                 // 加个委托显示msg,因为on系列都是在工作线程中调用的,ui不允许直接操作
                 AddMsgDelegate = new ShowMsg(AddMsg);
+                updateGridViewDelegate = new UpdateGridView(fnUpdateGridView);
 
                 // 设置服务器事件
                 server.OnPrepareListen += new TcpServerEvent.OnPrepareListenEventHandler(OnPrepareListen);
@@ -117,7 +121,15 @@ namespace HP_SC
         {
             try
             {
-                IntPtr connId = (IntPtr)Convert.ToInt32(this.txtDisConn.Text.Trim());
+                if (this.dgvConn.CurrentRow == null)
+                {
+                    MessageBox.Show("未选择连接的客户端！");
+                    return;
+                }
+
+                IntPtr connId = (IntPtr)(Convert.ToInt32(this.dgvConn.CurrentRow.Cells[0].Value.ToString()));
+                //IntPtr connId = (IntPtr)Convert.ToInt32(this.txtDisConn.Text.Trim());
+
                 // 断开指定客户
                 if (server.Disconnect(connId, true))
                 {
@@ -156,14 +168,37 @@ namespace HP_SC
             }
 
 
-            // 设置附加数据
+            //设置附加数据
             ClientInfo clientInfo = new ClientInfo();
             clientInfo.ConnId = connId;
             clientInfo.IpAddress = ip;
             clientInfo.Port = port;
+
+            daCI.Add(connId.ToString(), clientInfo);//向字典中添加数据，保存每一个连接
             if (extra.Set(connId, clientInfo) == false)
             {
-                AddMsg(string.Format(" > [连接客户端ID:{0}] -> SetConnectionExtra fail", connId));
+                AddMsg(string.Format(" > [连接客户端ID:{0}] -> 设置连接附加信息异常", connId));
+            }
+            else
+            {
+                //刷新datagridview数据                
+                DataTable dt = new DataTable();
+                dt.Columns.Add("connid");
+                dt.Columns.Add("IP");
+                dt.Columns.Add("prot");
+
+                ClientInfo ci = new ClientInfo();
+                foreach (var item in daCI)
+                {
+                    ci = (ClientInfo)item.Value;
+                    DataRow dr = dt.NewRow();
+                    dr["connid"] = ci.ConnId.ToString();
+                    dr["IP"] = ci.IpAddress.ToString();
+                    dr["prot"] = ci.Port.ToString();
+                    dt.Rows.Add(dr);
+                }
+
+                fnUpdateGridView(dt);
             }
 
             return HandleResult.Ok;
@@ -255,9 +290,34 @@ namespace HP_SC
             else
                 AddMsg(string.Format(" > [客户端ID：{0},错误] -> OP:{1},CODE:{2}", connId, enOperation, errorCode));
 
+            // 获取附加数据
+            ClientInfo clientInfo = extra.Get(connId);
+            daCI.Remove(clientInfo.ConnId.ToString());//从字典中移除该连接
             if (extra.Remove(connId) == false)
             {
                 AddMsg(string.Format(" > [关闭客户端ID：{0}] -> SetConnectionExtra({0}, null) fail", connId));
+            }
+            else
+            {
+                //刷新datagridview数据                
+                DataTable dt = new DataTable();
+                dt.Columns.Add("connid");
+                dt.Columns.Add("IP");
+                dt.Columns.Add("prot");
+                
+
+                ClientInfo ci = new ClientInfo();
+                foreach (var item in daCI)
+                {
+                    ci = (ClientInfo)item.Value;
+                    DataRow dr = dt.NewRow();
+                    dr["connid"] = ci.ConnId.ToString();
+                    dr["IP"] = ci.IpAddress.ToString();
+                    dr["prot"] = ci.Port.ToString();
+                    dt.Rows.Add(dr);
+                }
+
+                fnUpdateGridView(dt);
             }
 
             return HandleResult.Ok;
@@ -281,8 +341,7 @@ namespace HP_SC
             this.btnStop.Enabled = (appState == AppState.Started);
             this.txtIpAddress.Enabled = (appState == AppState.Stoped);
             this.txtPort.Enabled = (appState == AppState.Stoped);
-            this.txtDisConn.Enabled = (appState == AppState.Started);
-            this.btnDisconn.Enabled = (appState == AppState.Started && this.txtDisConn.Text.Length > 0);
+            //this.btnDisconn.Enabled = (appState == AppState.Started && this.dgvConn.Rows.Count > 0);
         }
 
         /// <summary>
@@ -307,11 +366,19 @@ namespace HP_SC
             }
         }
 
-        private void txtDisConn_TextChanged(object sender, EventArgs e)
+        void fnUpdateGridView(DataTable dt)
         {
-            // CONNID框被改变事件
-            this.btnDisconn.Enabled = (appState == AppState.Started && this.txtDisConn.Text.Length > 0);
+            if (this.lbxMsg.InvokeRequired)
+            {
+                // 很帅的调自己
+                this.dgvConn.Invoke(updateGridViewDelegate, dt);
+            }
+            else
+            {
+                this.dgvConn.DataSource = dt.DefaultView;
+            }
         }
+
 
         private void lbxMsg_KeyPress(object sender, KeyPressEventArgs e)
         {
