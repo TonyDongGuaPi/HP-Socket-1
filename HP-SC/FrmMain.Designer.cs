@@ -1,4 +1,4 @@
-﻿namespace HP_SC
+﻿namespace HP_SCServer
 {
     partial class FrmMain
     {

@@ -9,7 +9,7 @@ using System.Windows.Forms;
 using System.Runtime.InteropServices;
 using HPSocketCS;
 
-namespace HP_SC
+namespace HP_SCServer
 {
     public enum AppState
     {

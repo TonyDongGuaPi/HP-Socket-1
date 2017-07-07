@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HP-SC", "HP-SC\HP-SC.csproj", "{B785F4A0-155F-49FE-8AE2-4A7DD8EB8B1E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HP-SCServer", "HP-SC\HP-SCServer.csproj", "{B785F4A0-155F-49FE-8AE2-4A7DD8EB8B1E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HPSocketCS", "HPSocketCS\HPSocketCS.csproj", "{DFA935E2-CF37-4E26-B697-D7F3DEE19DD8}"
 EndProject
