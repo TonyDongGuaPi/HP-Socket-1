@@ -80,7 +80,18 @@
       <Name>HPSocketCS</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="bin\Debug\x64\HPSocket4C_U.dll" />
+    <Content Include="bin\Debug\x86\HP-SC.exe" />
+    <Content Include="bin\Debug\x86\HP-SC.pdb" />
+    <Content Include="bin\Debug\x86\HP-SC.vshost.exe" />
+    <Content Include="bin\Debug\x86\HPSocket4C_U.dll" />
+    <Content Include="bin\Debug\x86\HPSocketCS.dll" />
+    <Content Include="bin\Debug\x86\HPSocketCS.pdb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="bin\Release\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
