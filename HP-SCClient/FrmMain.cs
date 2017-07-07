@@ -35,11 +35,19 @@ namespace HP_SCClient
         bool isSendFile = false;
         StudentType studentType = StudentType.None;
 
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public FrmMain()
         {
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 窗体加载
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void FrmMain_Load(object sender, EventArgs e)
         {
             try
@@ -64,7 +72,12 @@ namespace HP_SCClient
                 AddMsg(ex.Message);
             }
         }
-
+        
+        /// <summary>
+        /// 开启连接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnStart_Click(object sender, EventArgs e)
         {
             try
@@ -75,7 +88,7 @@ namespace HP_SCClient
                 // 写在这个位置是上面可能会异常
                 SetAppState(AppState.Starting);
 
-                AddMsg(string.Format("$Client Starting ... -> ({0}:{1})", ip, port));
+                AddMsg(string.Format("$客户开启连接 ... -> ({0}:{1})", ip, port));
 
                 if (client.Connect(ip, port, this.cbxAsyncConn.Checked))
                 {
@@ -84,12 +97,12 @@ namespace HP_SCClient
                         SetAppState(AppState.Started);
                     }
 
-                    AddMsg(string.Format("$Client Start OK -> ({0}:{1})", ip, port));
+                    AddMsg(string.Format("$客户端开启连接成功 -> ({0}:{1})", ip, port));
                 }
                 else
                 {
                     SetAppState(AppState.Stoped);
-                    throw new Exception(string.Format("$Client Start Error -> {0}({1})", client.ErrorMessage, client.ErrorCode));
+                    throw new Exception(string.Format("$客户端开启连接异常 -> {0}({1})", client.ErrorMessage, client.ErrorCode));
                 }
             }
             catch (Exception ex)
@@ -98,21 +111,30 @@ namespace HP_SCClient
             }
         }
 
+        /// <summary>
+        /// 关闭与服务器的连接
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnStop_Click(object sender, EventArgs e)
         {
-
             // 停止服务
-            AddMsg("$Server Stop");
+            AddMsg("$关闭连接");
             if (client.Stop())
             {
                 SetAppState(AppState.Stoped);
             }
             else
             {
-                AddMsg(string.Format("$Stop Error -> {0}({1})", client.ErrorMessage, client.ErrorCode));
+                AddMsg(string.Format("$关闭连接异常 -> {0}({1})", client.ErrorMessage, client.ErrorCode));
             }
         }
 
+        /// <summary>
+        /// 发送数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnSend_Click(object sender, EventArgs e)
         {
             try
@@ -129,21 +151,26 @@ namespace HP_SCClient
                 // 发送
                 if (client.Send(bytes, bytes.Length))
                 {
-                    AddMsg(string.Format("$ ({0}) Send OK --> {1}", connId, send));
+                    AddMsg(string.Format("$ (连接ID:{0}) 发送完成 --> {1}", connId, send));
                 }
                 else
                 {
-                    AddMsg(string.Format("$ ({0}) Send Fail --> {1} ({2})", connId, send, bytes.Length));
+                    AddMsg(string.Format("$ (连接ID:{0}) 发送失败 --> {1} ({2})", connId, send, bytes.Length));
                 }
 
             }
             catch (Exception ex)
             {
-                AddMsg(string.Format("$ Send Fail -->  msg ({0})", ex.Message));
+                AddMsg(string.Format("$ 发送失败 -->  错误信息 ({0})", ex.Message));
             }
 
         }
 
+        /// <summary>
+        /// 发送大数据
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnSendSerializableObject_Click(object sender, EventArgs e)
         {
             try
@@ -153,7 +180,7 @@ namespace HP_SCClient
                 if (studentType != StudentType.None)
                 {
                     // 正在执行
-                    throw new Exception("being implemented");
+                    throw new Exception("正在执行");
                 }
 
                 IntPtr connId = client.ConnectionId;
@@ -191,24 +218,24 @@ namespace HP_SCClient
                     stuList.Add(students[1]);
 
                     // 防止粘包,延迟2秒发送下一组数据
-                    AddMsg(" *** 2 seconds after sending ...");
+                    AddMsg(" *** 延迟2秒发送 ...");
                     Thread.Sleep(2000);
 
                     // 发送list对象
                     studentType = StudentType.List;
                     if (client.SendBySerializable(stuList))
                     {
-                        AddMsg(string.Format("$ ({0}) Send OK --> {1}", connId, "List<Student>"));
+                        AddMsg(string.Format("$ ({0}) 发送完成 --> {1}", connId, "List<Student>"));
                     }
                     else
                     {
-                        AddMsg(string.Format("$ ({0}) Send Fail --> {1}", connId, "List<Student>"));
+                        AddMsg(string.Format("$ ({0}) 发送失败 --> {1}", connId, "List<Student>"));
                     }
 
                     ////////////////////////////////////////////////////////////////////////////////
 
                     // 防止粘包,延迟2秒发送下一组数据
-                    AddMsg(" *** 2 seconds after sending ...");
+                    AddMsg(" *** 延迟2秒发送 ...");
                     Thread.Sleep(2000);
 
                     // 改变性别
@@ -218,11 +245,11 @@ namespace HP_SCClient
                     studentType = StudentType.Single;
                     if (client.SendBySerializable(students[0]))
                     {
-                        AddMsg(string.Format("$ ({0}) Send OK --> {1}", connId, "Student"));
+                        AddMsg(string.Format("$ ({0}) 发送成功--> {1}", connId, "Student"));
                     }
                     else
                     {
-                        AddMsg(string.Format("$ ({0}) Send Fail --> {1}", connId, "Student"));
+                        AddMsg(string.Format("$ ({0}) 发送失败 --> {1}", connId, "Student"));
                     }
 
                 }));
@@ -231,7 +258,7 @@ namespace HP_SCClient
             catch (Exception ex)
             {
                 studentType = StudentType.None;
-                AddMsg(string.Format("$ Send Fail -->  msg ({0})", ex.Message));
+                AddMsg(string.Format("$ 发送失败 -->  msg ({0})", ex.Message));
             }
         }
 
@@ -295,11 +322,10 @@ namespace HP_SCClient
         HandleResult OnConnect(TcpClient sender)
         {
             // 已连接 到达一次
-
             // 如果是异步联接,更新界面状态
             this.Invoke(new ConnectUpdateUiDelegate(ConnectUpdateUi));
 
-            AddMsg(string.Format(" > [{0},OnConnect]", sender.ConnectionId));
+            AddMsg(string.Format(" > [连接ID：{0},连接成功]", sender.ConnectionId));
 
             return HandleResult.Ok;
         }
@@ -307,7 +333,7 @@ namespace HP_SCClient
         HandleResult OnSend(TcpClient sender, byte[] bytes)
         {
             // 客户端发数据了
-            AddMsg(string.Format(" > [{0},OnSend] -> ({1} bytes)", sender.ConnectionId, bytes.Length));
+            AddMsg(string.Format(" > [连接ID：{0},发送返回数据] -> ({1} bytes)", sender.ConnectionId, bytes.Length));
 
             return HandleResult.Ok;
         }
@@ -337,8 +363,8 @@ namespace HP_SCClient
                     msg = txt;
                 }
 
-                AddMsg(string.Format(" > [{0},OnReceive] -> FileInfo(Path:\"{1}\",Size:{2})", sender.ConnectionId, myFile.FilePath, myFile.FileSize));
-                AddMsg(string.Format(" > [{0},OnReceive] -> FileContent(\"{1}\")", sender.ConnectionId, msg));
+                AddMsg(string.Format(" > [连接ID：{0},接收返回数据] -> FileInfo(Path:\"{1}\",Size:{2})", sender.ConnectionId, myFile.FilePath, myFile.FileSize));
+                AddMsg(string.Format(" > [连接ID：{0},接收返回数据] -> FileContent(\"{1}\")", sender.ConnectionId, msg));
             }
             else if (studentType != StudentType.None)
             {
@@ -348,26 +374,26 @@ namespace HP_SCClient
                         Student[] students = sender.BytesToObject(bytes) as Student[];
                         foreach (var stu in students)
                         {
-                            AddMsg(string.Format(" > [{0},OnReceive] -> Student({1},{2},{3})", sender.ConnectionId, stu.Id, stu.Name, stu.GetSexString()));
+                            AddMsg(string.Format(" > [连接ID：{0},接收返回数据] -> Student({1},{2},{3})", sender.ConnectionId, stu.Id, stu.Name, stu.GetSexString()));
                         }
                         break;
                     case StudentType.List:
                         List<Student> stuList = sender.BytesToObject(bytes) as List<Student>;
                         foreach (var stu in stuList)
                         {
-                            AddMsg(string.Format(" > [{0},OnReceive] -> Student({1},{2},{3})", sender.ConnectionId, stu.Id, stu.Name, stu.GetSexString()));
+                            AddMsg(string.Format(" > [连接ID：{0},接收返回数据] -> Student({1},{2},{3})", sender.ConnectionId, stu.Id, stu.Name, stu.GetSexString()));
                         }
                         break;
                     case StudentType.Single:
                         Student student = sender.BytesToObject(bytes) as Student;
-                        AddMsg(string.Format(" > [{0},OnReceive] -> Student({1},{2},{3})", sender.ConnectionId, student.Id, student.Name, student.GetSexString()));
+                        AddMsg(string.Format(" > [连接ID：{0},接收返回数据] -> Student({1},{2},{3})", sender.ConnectionId, student.Id, student.Name, student.GetSexString()));
                         studentType = StudentType.None;
                         break;
                 }
             }
             else
             {
-                AddMsg(string.Format(" > [{0},OnReceive] -> ({1} bytes)", sender.ConnectionId, bytes.Length));
+                AddMsg(string.Format(" > [连接ID：{0},接收返回数据] -> ({1} bytes)", sender.ConnectionId, bytes.Length));
             }
 
             return HandleResult.Ok;
@@ -377,10 +403,10 @@ namespace HP_SCClient
         {
             if (errorCode == 0)
                 // 连接关闭了
-                AddMsg(string.Format(" > [{0},OnClose]", sender.ConnectionId));
+                AddMsg(string.Format(" > [连接ID：{0},关闭连接]", sender.ConnectionId));
             else
                 // 出错了
-                AddMsg(string.Format(" > [{0},OnError] -> OP:{1},CODE:{2}", sender.ConnectionId, enOperation, errorCode));
+                AddMsg(string.Format(" > [连接ID：{0},关闭连接异常] -> OP:{1},CODE:{2}", sender.ConnectionId, enOperation, errorCode));
 
             // 通知界面,只处理了连接错误,也没进行是不是连接错误的判断,所以有错误就会设置界面
             // 生产环境请自己控制
